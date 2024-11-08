@@ -1,6 +1,14 @@
-use bevy::{app, prelude::*, render::view::RenderLayers};
+use bevy::{
+  app,
+  prelude::*,
+  render::{
+    render_asset::RenderAssetUsages,
+    render_resource::{Extent3d, TextureDimension, TextureFormat, TextureUsages},
+    view::RenderLayers,
+  },
+};
 
-pub const SPAWN_DUMMY_RENDER_LAYER_0_CAMERA: bool = false;
+pub const SPAWN_DUMMY_RENDER_LAYER_0_CAMERA: bool = true;
 
 // Change either of these values to 0 and the button will suddenly appear
 pub const UI_RENDER_LAYER: usize = 1;
@@ -117,6 +125,7 @@ fn setup(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
+  mut images: ResMut<Assets<Image>>,
 ) {
   // circular base
   commands.spawn((
@@ -169,6 +178,34 @@ fn setup(
   ));
 
   if SPAWN_DUMMY_RENDER_LAYER_0_CAMERA {
-    commands.spawn((Camera3dBundle::default(), RenderLayers::layer(0)));
+    let size = Extent3d {
+      width: 512,
+      height: 512,
+      ..default()
+    };
+
+    // This is the texture that will be rendered to.
+    let mut image = Image::new_fill(
+      size,
+      TextureDimension::D2,
+      &[0, 0, 0, 0],
+      TextureFormat::Bgra8UnormSrgb,
+      RenderAssetUsages::default(),
+    );
+    // You need to set these texture usage flags in order to use the image as a render target
+    image.texture_descriptor.usage =
+      TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST | TextureUsages::RENDER_ATTACHMENT;
+
+    let image_handle = images.add(image);
+    commands.spawn((
+      Camera3dBundle {
+        camera: Camera {
+          target: image_handle.into(),
+          ..default()
+        },
+        ..default()
+      },
+      RenderLayers::layer(0),
+    ));
   }
 }
