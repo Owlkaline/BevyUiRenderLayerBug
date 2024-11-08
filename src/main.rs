@@ -1,5 +1,7 @@
 use bevy::{app, prelude::*, render::view::RenderLayers};
 
+pub const SPAWN_DUMMY_RENDER_LAYER_0_CAMERA: bool = false;
+
 // Change either of these values to 0 and the button will suddenly appear
 pub const UI_RENDER_LAYER: usize = 1;
 pub const MAIN_RENDER_LAYER: usize = 2;
@@ -165,4 +167,8 @@ fn setup(
     PlayerCamera,
     RenderLayers::layer(MAIN_RENDER_LAYER),
   ));
+
+  if SPAWN_DUMMY_RENDER_LAYER_0_CAMERA {
+    commands.spawn((Camera3dBundle::default(), RenderLayers::layer(0)));
+  }
 }
